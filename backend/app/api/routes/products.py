@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.models.product import Product
+from app.models import Product, User
 from app.api.deps import get_db, get_current_user
 from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
 from app.services.product_service import ProductService
@@ -20,9 +20,10 @@ router = APIRouter(prefix="/products", tags=["products"], dependencies=[Depends(
 def create_product(
     payload: ProductCreate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> Product:
     try:
-        return ProductService(db).create(payload)
+        return ProductService(db).create(payload, user.id)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
 
@@ -67,8 +68,9 @@ def update_product(
     product_id: UUID,
     payload: ProductUpdate,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> Product:
-    product = ProductService(db).update(product_id, payload)
+    product = ProductService(db).update(product_id, payload, user.id)
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
@@ -82,6 +84,7 @@ def update_product(
 def delete_product(
     product_id: UUID,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> None:
-    if not ProductService(db).delete(product_id):
+    if not ProductService(db).delete(product_id, user.id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")

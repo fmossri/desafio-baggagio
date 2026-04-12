@@ -14,6 +14,7 @@ os.environ["DATABASE_URL"] = test_db_url
 os.environ.setdefault("JWT_SECRET_KEY", "test-key")
 os.environ.setdefault("JWT_ALGORITHM", "HS256")
 os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
+os.environ.setdefault("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
 
 from app.api.deps import get_db
 from app.db import Base
@@ -35,8 +36,13 @@ def db_session() -> Generator[Session, None, None]:
         db.close()
 
 @pytest.fixture(autouse=True)
-def _clean_products(db_session: Session) -> Generator[None, None, None]:
-    db_session.execute(text("TRUNCATE TABLE products RESTART IDENTITY CASCADE"))
+def _clean_products_and_messaging(db_session: Session) -> Generator[None, None, None]:
+    db_session.execute(
+        text(
+            "TRUNCATE TABLE products, outbox_events, processed_events " 
+            "RESTART IDENTITY CASCADE"
+        )
+    )
     db_session.commit()
     yield
 
