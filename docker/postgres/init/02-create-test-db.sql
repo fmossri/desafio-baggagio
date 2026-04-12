@@ -1,0 +1,1 @@
+CREATE DATABASE baggagio_test_db OWNER baggagio;
