@@ -14,7 +14,18 @@ services:
       test: ["CMD-SHELL", "pg_isready -U baggagio -d baggagio_db"]
       interval: 3s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
 
   api:
     build:
@@ -25,10 +36,13 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder-key}
       JWT_ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
     ports:
       - "8000:8000"
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     
     #Comentar para produção
@@ -36,6 +50,44 @@ services:
       - ./backend:/app
     
     command: ["sh", "-c", "alembic upgrade head && python -m scripts.seed_admin && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
+
+  outbox-relay:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+
+    working_dir: /app
+
+    command: ["python", "-m", "app.workers.outbox_relay"]
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      MESSAGING_RETRY_TTL_MS: "5000"
+      MESSAGING_MAX_ATTEMPTS: "8"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: ["python", "-m", "app.workers.product_events_consumer"]
 
   test:
     profiles: ["test"]
