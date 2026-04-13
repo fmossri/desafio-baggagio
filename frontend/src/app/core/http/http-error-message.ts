@@ -11,6 +11,10 @@ const CODE_MESSAGES: Record<string, Pick<UserFacingMessage, 'summary' | 'detail'
         summary: 'Dados inválidos',
         detail: 'Revise os campos e tente novamente.',
     },
+    unauthenticated: {
+        summary: 'Sessão',
+        detail: 'Não foi possível autenticar ou a sessão expirou. Por favor, faça login novamente.',
+    },
 };
 
 function summarizeValidationDetails(details: unknown): string {
@@ -36,7 +40,10 @@ export function httpErrorToUserMessage(err: unknown): UserFacingMessage {
 
     if (body && typeof body === 'object' && 'code' in body && typeof (body as { code: string }).code === 'string') {
         const code = (body as { code: string}).code;
-        const mapped = CODE_MESSAGES[code];
+        const apiMessage = 'message' in body && typeof (body as { message: unknown }).message === 'string'
+            ? String((body as { message: string }).message)
+            : undefined;
+
         if (code === 'validation_error' && 'details' in body) {
             return {
                 severity: 'error',
@@ -44,9 +51,14 @@ export function httpErrorToUserMessage(err: unknown): UserFacingMessage {
                 detail: summarizeValidationDetails((body as { details: unknown }).details),
             };
         }
+        const mapped = CODE_MESSAGES[code];
         if (mapped) {
             return { severity: 'error', ...mapped};
         }
+
+        if (apiMessage) {
+            return { severity: 'error', summary: 'Erro', detail: apiMessage};
+        };
     }
     
     if (body && typeof body === 'object' && 'detail' in body) {

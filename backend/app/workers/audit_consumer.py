@@ -2,6 +2,7 @@ import json
 import logging
 import time
 import uuid
+
 from collections.abc import Mapping
 from typing import Any
 
@@ -13,11 +14,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.logging_config import configure_worker_logging
 from app.db import SessionLocal
 from app.messaging.constants import EXCHANGE_DLX, QUEUE_AUDIT_MAIN, ROUTING_DLQ
 from app.messaging.events import ProductChangedEvent
 from app.messaging.topology import declare_topology
-from app.models import ProcessedEvent
+from app.models import ProcessedEvent, ProductAuditLog
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +72,13 @@ def on_message(
         event = ProductChangedEvent.model_validate(payload)
 
         db.add(ProcessedEvent(event_id=uuid.UUID(str(event.event_id))))
+        db.add(ProductAuditLog(
+            event_id=event.event_id,
+            event_type=event.event_type.value,
+            actor_user_id=event.actor_user_id,
+            product_id=event.product.id,
+            payload=event.model_dump(mode="json"),
+        ))
         db.commit()
 
         logger.info(
@@ -92,14 +101,14 @@ def on_message(
     except Exception:
         db.rollback()
         channel.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-        logger.exception("consumer_transiennt_failure_nacked")
+        logger.exception("consumer_transient_failure_nacked")
 
     finally:
         db.close()
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_worker_logging(service_name="audit_consumer")
     logger.info("audit_consumer_started")
 
     while True:

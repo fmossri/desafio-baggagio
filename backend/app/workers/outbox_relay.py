@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.logging_config import configure_worker_logging
 from app.db import SessionLocal
 from app.messaging.events import ProductChangedEvent
 from app.messaging.publisher import ProductEventPublisher
@@ -72,21 +73,24 @@ def run_once(db: Session, publisher: ProductEventPublisher) -> int:
 
 
 def main() -> None:
-    logging.basicConfig(level=logging.INFO)
+    configure_worker_logging(service_name="outbox_relay")
     logger.info("outbox_relay_started")
 
     publisher = ProductEventPublisher()
 
-    while True:
-        db = SessionLocal()
-        try:
-            sent = run_once(db, publisher)
-            if sent == 0:
-                time.sleep(settings.outbox_poll_interval_seconds)
-        except Exception:
-            logger.exception("outbox_relay_loop_failed")
-        finally:
-            db.close()
+    try:
+        while True:
+            db = SessionLocal()
+            try:
+                sent = run_once(db, publisher)
+                if sent == 0:
+                    time.sleep(settings.outbox_poll_interval_seconds)
+            except Exception:
+                logger.exception("outbox_relay_loop_failed")
+            finally:
+                db.close()
+    finally:
+        publisher.close()
 
 if __name__ == "__main__":
     main()

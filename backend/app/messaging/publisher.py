@@ -2,7 +2,8 @@ import json
 import logging
 
 import pika
-from pika.exceptions import AMQPError
+from pika.exceptions import AMQPError, StreamLostError
+from pika.adapters.blocking_connection import BlockingChannel
 
 from app.core.config import settings
 from app.messaging.constants import EXCHANGE_PRODUCTS
@@ -15,19 +16,43 @@ logger = logging.getLogger(__name__)
 class ProductEventPublisher:
     def __init__(self, rabbitmq_url: str | None = None) -> None:
         self._url = rabbitmq_url or settings.rabbitmq_url
+        self._connection: pika.BlockingConnection | None = None
+        self._channel: BlockingChannel | None = None
+
+    def _ensure_channel(self) -> None:
+        if (
+            self._connection
+            and self._connection.is_open
+            and self._channel
+            and self._channel.is_open
+        ):
+            return
+        self.close()
+        params = pika.URLParameters(self._url)
+        self._connection = pika.BlockingConnection(params)
+        self._channel = self._connection.channel()
+        declare_topology(self._channel)
+
+    def close(self) -> None:
+        try:
+            if self._channel and self._channel.is_open:
+                self._channel.close()
+        except Exception:
+            logger.exception("publisher_channel_close_failed")
+        self._channel = None
+        try:
+            if self._connection and self._connection.is_open:
+                self._connection.close()
+        except Exception:
+            logger.exception("publisher_connection_close_failed")
+        self._connection = None
 
     def publish(self, event: ProductChangedEvent) -> None:
-        params = pika.URLParameters(self._url)
-        connection = pika.BlockingConnection(params)
-
+        payload = json.dumps(event.model_dump(mode="json"))
         try:
-            channel = connection.channel()
-
-            declare_topology(channel)
-
-            payload = json.dumps(event.model_dump(mode="json"))
-
-            channel.basic_publish(
+            self._ensure_channel()
+            assert self._channel is not None
+            self._channel.basic_publish(
                 exchange=EXCHANGE_PRODUCTS,
                 routing_key=event.routing_key(),
                 body=payload,
@@ -39,28 +64,22 @@ class ProductEventPublisher:
                 ),
                 mandatory=False,
             )
-
             logger.info(
                 "published_product_event",
                 extra={
                     "event_id": str(event.event_id),
                     "event_type": event.event_type.value,
-                    "routing_key": event.routing_key()
-                }
+                    "routing_key": event.routing_key(),
+                },
             )
-
-        except AMQPError as e:
+        except (AMQPError, StreamLostError):
             logger.exception(
                 "failed_to_publish_product_event",
                 extra={
                     "event_id": str(event.event_id),
                     "event_type": event.event_type.value,
-                    "error": str(e),
-                }
+                },
             )
+            self.close()
             raise
-        
-        finally:
-            if connection.is_open:
-                connection.close()
-        
+   
