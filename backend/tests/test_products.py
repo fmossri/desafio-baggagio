@@ -56,22 +56,18 @@ def test_products_crud_smoke(client: TestClient, auth_header: dict[str, str]) ->
             "active": True,
         },
     )
-    # Create
     assert created.status_code == 201
     product_id = created.json()["id"]
 
-    # Lista
     listed = client.get("/products", headers=auth_header)
     assert listed.status_code == 200
     body = listed.json()
     assert "items" in body and "total" in body
     assert isinstance(body["items"], list)
 
-    # Get
     got = client.get(f"/products/{product_id}", headers=auth_header)
     assert got.status_code == 200
 
-    # Update
     updated = client.put(
         f"/products/{product_id}",
         headers=auth_header,
@@ -81,15 +77,12 @@ def test_products_crud_smoke(client: TestClient, auth_header: dict[str, str]) ->
     assert updated.status_code == 200
     assert updated.json()["quantity"] == 7
 
-    # Delete
     deleted = client.delete(f"/products/{product_id}", headers=auth_header)
     assert deleted.status_code == 204
 
-    # Get depois de delete deve retornar 404
     got_after_delete = client.get(f"/products/{product_id}", headers=auth_header)
     assert got_after_delete.status_code == 404
 
-    # Lista depois do delete deve retornar vazia
     listed_after_delete = client.get("/products", headers=auth_header)
     assert listed_after_delete.status_code == 200
     assert listed_after_delete.json()["items"] == []

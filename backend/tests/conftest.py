@@ -15,6 +15,7 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-key")
 os.environ.setdefault("JWT_ALGORITHM", "HS256")
 os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 os.environ.setdefault("RABBITMQ_URL", "amqp://guest:guest@localhost:5672/")
+os.environ["RATE_LIMIT_LOGIN_PER_MINUTE"] = "100000"
 
 from app.api.deps import get_db
 from app.db import Base
