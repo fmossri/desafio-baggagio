@@ -1,21 +1,36 @@
-from fastapi import FastAPI, HTTPException,Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from fastapi import Depends
-from app.core.middleware.request_id import RequestIdMiddleware, REQUEST_ID_HEADER
+from starlette.responses import Response
 
-from app.api.routes import auth, products
 from app.api.deps import get_db
+from app.api.routes import auth, products
 from app.core.config import settings
 from app.core.errors import api_error_payload
+from app.core.limiter import limiter
 from app.core.logging_config import configure_logging
+from app.core.middleware.request_id import REQUEST_ID_HEADER, RequestIdMiddleware
+from app.core.middleware.security_headers import SecurityHeadersMiddleware
+from app.core.redis_client import get_redis
+
+
+def rate_limit_exceeded_handler(request: Request, exc: Exception) -> Response:
+    if not isinstance(exc, RateLimitExceeded):
+        raise exc
+    return _rate_limit_exceeded_handler(request, exc)
+
 
 configure_logging()
 app = FastAPI(title=settings.app_name, version="0.1.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 def _cors_origins() -> list[str]:
     raw = settings.cors_origins
@@ -33,6 +48,8 @@ app.add_middleware(
 )
 
 app.add_middleware(RequestIdMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
+
 
 def _default_code_for_status(status_code: int) -> str:
     match status_code:
@@ -92,6 +109,8 @@ def health() -> dict[str, str]:
 def ready(db: Session = Depends(get_db)) -> dict[str, str]:
     try:
         db.execute(text("SELECT 1"))
+        r = get_redis()
+        r.ping()
     except Exception:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Service unavailable")
     return {"status": "ready"}
