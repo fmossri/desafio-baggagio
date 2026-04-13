@@ -3,7 +3,6 @@ import logging
 import time
 import uuid
 
-from pythonjsonlogger import jsonlogger
 from collections.abc import Mapping
 from typing import Any
 
