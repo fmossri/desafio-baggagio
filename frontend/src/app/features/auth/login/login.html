@@ -1,1 +1,41 @@
-<p>login works!</p>
+<div class="'login">
+    <h1>Entrar</h1>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+            <label for="email">Email</label>
+            <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                autocomplete="username"
+                class="w-full"
+            />
+        </div>
+
+        <div class="field">
+            <label for="password">Senha</label>
+            <p-password
+                id="password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                autocomplete="current-password"
+                styleClass="w-full"
+                [inputStyleClass]="w-full"
+            />
+        </div>
+
+        <p-button
+            type="submit"
+            label="Entrar"
+            [loading]="loading"
+            [disabled]="loading"
+        />
+
+        @if (errorMessage) {
+            <p-message severity="error" [text]="errorMessage" />
+        }	
+    </form>
+</div>
