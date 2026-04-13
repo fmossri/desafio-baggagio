@@ -1,0 +1,28 @@
+:host {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background-color: var(--p-surface-100, #f3f4f6);
+  }  
+  .app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--p-surface-0, #fff);
+    border-bottom: 1px solid var(--p-content-border-color, #e5e7eb);
+  }
+  .app-header .title {
+    font-weight: 600;
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+  }
+  .app-main {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem 2rem;
+    box-sizing: border-box;
+  }
