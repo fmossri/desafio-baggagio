@@ -27,6 +27,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: ./backend
@@ -40,6 +50,7 @@ services:
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder-key}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     ports:
       - "8000:8000"
     depends_on:
@@ -47,7 +58,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-    
+      redis:
+        condition: service_healthy
     volumes:
       - ./backend:/app
     
@@ -142,8 +154,11 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-test-key}
       RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       TEST_DATABASE_URL: ${TEST_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_test_db}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
     volumes:

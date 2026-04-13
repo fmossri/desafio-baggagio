@@ -25,4 +25,13 @@ class Settings(BaseSettings):
         validation_alias="CORS_ALLOW_CREDENTIALS",
     )
 
+    redis_url: str = Field(
+        default="redis://localhost:6379/0",
+        validation_alias="REDIS_URL",
+    )
+    refresh_token_expire_days: int = Field(default=7, validation_alias="REFRESH_TOKEN_EXPIRE_DAYS")
+    rate_limit_login_per_minute: int = Field(
+        default=10,
+        validation_alias="RATE_LIMIT_LOGIN_PER_MINUTE",
+)
 settings = Settings() #type: ignore[call-arg]
