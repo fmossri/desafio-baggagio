@@ -1,4 +1,4 @@
-<div class="'login">
+<div class="login-page">
     <h1>Entrar</h1>
 
     <form [formGroup]="form" (ngSubmit)="submit()">
@@ -23,9 +23,15 @@
                 [toggleMask]="true"
                 autocomplete="current-password"
                 styleClass="w-full"
-                [inputStyleClass]="w-full"
+                [inputStyleClass]="'w-full'"
             />
         </div>
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+            <small class="field-error">Informe um e-mail válido.</small>
+        }
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+            <small class="field-error">Senha é obrigatória.</small>
+        }
 
         <p-button
             type="submit"
@@ -33,9 +39,5 @@
             [loading]="loading"
             [disabled]="loading"
         />
-
-        @if (errorMessage) {
-            <p-message severity="error" [text]="errorMessage" />
-        }	
     </form>
 </div>

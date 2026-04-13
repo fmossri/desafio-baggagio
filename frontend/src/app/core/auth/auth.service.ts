@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -11,7 +10,6 @@ const TOKEN_KEY = 'access_token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private readonly http = inject(HttpClient);
-    private readonly router = inject(Router);
 
     private readonly userSubject = new BehaviorSubject<UserMe | null>(null);
     readonly user$ = this.userSubject.asObservable();
