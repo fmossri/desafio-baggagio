@@ -39,7 +39,7 @@ def db_session() -> Generator[Session, None, None]:
 def _clean_products_and_messaging(db_session: Session) -> Generator[None, None, None]:
     db_session.execute(
         text(
-            "TRUNCATE TABLE products, outbox_events, processed_events " 
+            "TRUNCATE TABLE products, outbox_events, processed_events, product_audit_log " 
             "RESTART IDENTITY CASCADE"
         )
     )
