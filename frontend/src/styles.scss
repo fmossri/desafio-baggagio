@@ -1,2 +1,92 @@
 /* You can add global styles to this file, and also import other style files */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 @import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--p-text-color, #1f2937);
+  background-color: var(--p-surface-100, #f3f4f6);
+  -webkit-font-smoothing: antialiased;
+}
+
+.min-w-12rem { min-width: 12rem; }
+.min-w-10rem { min-width: 10rem; }
+
+.p-button {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.p-button:not(.p-button-icon-only) {
+  padding-block: 0.4rem;
+  padding-inline: 0.75rem;
+}
+
+.product-list-page .p-button:not(.p-button-text):not(.p-button-outlined) {
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.product-list-page .p-button.p-button-outlined {
+  border-radius: 0.5rem;
+}
+.product-list-page > p-table {
+  background: var(--p-surface-0, #fff);
+  border: 1px solid var(--p-content-border-color, #e5e7eb);
+  border-radius: var(--p-content-border-radius, 8px);
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.product-list-page .p-datatable .p-datatable-table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th,
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.625rem 0.75rem;
+    vertical-align: middle;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th:nth-child(1),
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td:nth-child(1) {
+    width: 36%;
+    min-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th:nth-child(2),
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td:nth-child(2) {
+    width: 14%;
+    text-align: end;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th:nth-child(3),
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td:nth-child(3) {
+    width: 10%;
+    text-align: end;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th:nth-child(4),
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td:nth-child(4) {
+    width: 12%;
+  }
+  .product-list-page .p-datatable .p-datatable-thead > tr > th:nth-child(5),
+  .product-list-page .p-datatable .p-datatable-tbody > tr > td:nth-child(5) {
+    width: 7.5rem;
+    text-align: end;
+    white-space: nowrap;
+  }
