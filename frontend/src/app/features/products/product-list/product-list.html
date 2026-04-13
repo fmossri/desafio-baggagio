@@ -1,1 +1,57 @@
-<p>product-list works!</p>
+<p-toast />
+<p-confirmDialog />
+
+<p-toolbar>
+    <div class="p-toolbar-group-start flex flex-wrap gap-2 align-items=end">
+        <span class="p-float-label">
+            <input pInputText id="q" [(ngModel)]="filterQ" />
+            <label for="q">Pesquisar</label>
+        </span>
+        <p-button label="Aplicar filtros" (onClick)="applyFilters()" />
+    </div>
+</p-toolbar>
+
+@if (error) {
+    <p-message severity="error" [text]="error" />
+}
+
+<p-table
+    [value]="products"
+    [lazy]="true"
+    (onLazyLoad)="load($event)"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} produtos"
+>
+    <ng-template pTemplate="header">
+        <tr>
+            <th>Nome</th>
+            <th>Preço</th>
+            <th>Qtd.</th>
+            <th>Ativo</th>
+            <th style="width: 8rem"></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+        <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.price }}</td>
+            <td>{{ row.quantity }}</td>
+            <td>
+                <p-tag [severity]="row.active ? 'success' : 'danger'" [value]="row.active ? 'Sim' : 'Não'" />
+            </td>
+            <td>
+                <p-button icon="pi pi-trash" severity="danger" (onClick)="confirmDelete(row)" />
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="5">Nenhum produto encontrado.</td>
+        </tr>
+    </ng-template>
+</p-table>
