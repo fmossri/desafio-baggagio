@@ -57,7 +57,7 @@ class ProductRepository:
             escaped = q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
             statement = statement.where(Product.name.ilike(f"%{escaped}%", escape="\\"))
         if active is not None:
-            statement = statement.where(Product.active)
+            statement = statement.where(Product.active.is_(active))
         if min_price is not None:
             statement = statement.where(Product.price >= min_price)
         if max_price is not None:
