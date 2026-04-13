@@ -17,7 +17,9 @@ def test_login_invalid_credentials_returns_401_generic(client: TestClient, seede
         json={"email": "admin@exemplo.com", "password": "wrong_pass"},
     )
     assert response.status_code == 401
-    assert response.json()["detail"] == "Could not authenticate"
+    body = response.json()
+    assert body["code"] == "unauthenticated"
+    assert body["message"] == "Could not authenticate"
 
 def test_auth_me_requires_token(client: TestClient) -> None:
     response = client.get("/auth/me")
