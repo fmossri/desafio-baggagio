@@ -5,7 +5,6 @@ import app.messaging.constants as cons
 
 
 def declare_topology(channel: BlockingChannel) -> None:
-    # Exchanges
     channel.exchange_declare(
         exchange=cons.EXCHANGE_PRODUCTS,
         exchange_type="topic",
@@ -16,7 +15,6 @@ def declare_topology(channel: BlockingChannel) -> None:
         exchange_type="direct",
         durable=True,
     )
-    # Queues
     channel.queue_declare(
         queue=cons.QUEUE_AUDIT_MAIN,
         durable=True,
