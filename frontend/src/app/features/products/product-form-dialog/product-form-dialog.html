@@ -1,0 +1,48 @@
+<p-dialog
+    [header]="product ? 'Editar Produto' : 'Novo Produto'"
+    [modal]="true"
+    [visible]="visible"
+    (visibleChange)="onVisibleChange($event)"
+    [style]="{ width: 'min(28rem, 92vw)' }"	
+    [draggable]="false"
+>
+    <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="field">
+            <label for="pf-name">Nome</label>
+            <input pInputText id="pf-name" formControlName="name" class="w-full" autocomplete="off" />
+        </div>
+
+        <div class="field">
+            <label for="pf-descript">Descrição</label>
+            <textarea pTextarea id="pf-descript" formControlName="description" rows="3" class="w-full" />
+        </div>
+
+        <div class="field">
+            <label for="pf-price">Preço</label>
+            <input 
+                pInputNumber 
+                id="pf-price" 
+                formControlName="price" 
+                mode="decimal" 
+                [min]="0" 
+                [maxFractionDigits]="2" 
+                class="w-full" 
+            />
+        </div>
+
+        <div class="field">
+            <label for="pf-quant">Quantidade</label>
+            <input pInputNumber id="pf-quant" formControlName="quantity" [min]="0" [useGrouping]="false" class="w-full" />
+        </div>
+
+        <div class="field flex align-items-center gap-2">
+            <p-checkbox formControlName="active" inputId="pf-active" [binary]="true" />
+            <label for="pf-active">Ativo</label>
+        </div>
+
+        <div class="flex justify-content-end gap-2 mt-3">
+            <p-button type="button" label="Cancelar" severity="secondary" (onClick)="cancel()" />
+            <p-button type="submit" label="Salvar" [disabled]="form.invalid" />
+        </div>
+    </form>
+</p-dialog>

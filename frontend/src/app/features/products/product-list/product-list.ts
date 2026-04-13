@@ -13,6 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
 
 import { ProductService } from '../product.service';
+import { ProductFormDialog } from '../product-form-dialog/product-form-dialog';
 import type { Product, ProductSort } from '../../../core/models/product.models';
 
 @Component({
@@ -30,6 +31,7 @@ import type { Product, ProductSort } from '../../../core/models/product.models';
     MessageModule,
     ConfirmDialogModule,
     ToastModule,
+    ProductFormDialog,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './product-list.html',
@@ -44,6 +46,9 @@ export class ProductList implements OnInit {
     totalRecords = 0;
     loading = false;
     error: string | null = null;
+
+    showDialog = false;
+    dialogProduct: Product | null = null;
 
     filterQ = '';
     filterActive: boolean | null = null;
@@ -95,6 +100,20 @@ export class ProductList implements OnInit {
         this.load({ first: 0, rows: 10 } as TableLazyLoadEvent);
     }
 
+    onDialogSaved(): void {
+        this.applyFilters();
+    }
+
+    openCreate(): void {
+        this.dialogProduct = null;
+        this.showDialog = true;
+    }
+
+    openEdit(row: Product): void {
+        this.dialogProduct = row;
+        this.showDialog = true;
+    }
+
     confirmDelete(row: Product): void {
         this.confirm.confirm({
             message: `Remover "${row.name}"?`,
@@ -125,5 +144,7 @@ export class ProductList implements OnInit {
             },
         });
     }
+
+
 }
 

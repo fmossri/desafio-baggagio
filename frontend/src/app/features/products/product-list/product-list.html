@@ -2,12 +2,24 @@
 <p-confirmDialog />
 
 <p-toolbar>
-    <div class="p-toolbar-group-start flex flex-wrap gap-2 align-items=end">
+    <div class="p-toolbar-group-start flex flex-wrap gap-2 align-items-end">
         <span class="p-float-label">
             <input pInputText id="q" [(ngModel)]="filterQ" />
             <label for="q">Pesquisar</label>
         </span>
+        <p-select
+            inputId="sort"
+            [(ngModel)]="sort"
+            [options]="sortOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Ordenar por"
+            styleClass="min-w-12-rem"
+        />
         <p-button label="Aplicar filtros" (onClick)="applyFilters()" />
+    </div>
+    <div class="p-toolbar-group-end">
+        <p-button label="Novo produto" icon="pi pi-plus" (onClick)="openCreate()" />
     </div>
 </p-toolbar>
 
@@ -45,6 +57,7 @@
                 <p-tag [severity]="row.active ? 'success' : 'danger'" [value]="row.active ? 'Sim' : 'Não'" />
             </td>
             <td>
+                <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(row)" />
                 <p-button icon="pi pi-trash" severity="danger" (onClick)="confirmDelete(row)" />
             </td>
         </tr>
@@ -55,3 +68,10 @@
         </tr>
     </ng-template>
 </p-table>
+
+<app-product-form-dialog
+    [visible]="showDialog"
+    (visibleChange)="showDialog = $event"
+    [product]="dialogProduct"
+    (saved)="onDialogSaved()"
+/>
