@@ -1,14 +1,15 @@
 from uuid import UUID
-
+from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.models import Product, User
 from app.api.deps import get_db, get_current_user
-from app.schemas.product import ProductCreate, ProductRead, ProductUpdate
+from app.schemas.product import ProductCreate, ProductRead, ProductUpdate, ProductSort, ProductListResponse
 from app.services.product_service import ProductService
 
 router = APIRouter(prefix="/products", tags=["products"], dependencies=[Depends(get_current_user)])
+
 
 @router.post(
     "", 
@@ -27,9 +28,10 @@ def create_product(
     except ValueError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")
 
+
 @router.get(
     "", 
-    response_model=list[ProductRead], 
+    response_model=ProductListResponse, 
     status_code=status.HTTP_200_OK, 
     summary="Listar produtos", 
     response_description="Lista de produtos"
@@ -37,9 +39,30 @@ def create_product(
 def list_products(
     skip: int = Query(default=0, ge=0, le=10_000),
     limit: int = Query(default=50, ge=1, le=100),
+    q: str | None = Query(default=None, min_length=1, max_length=255),
+    active: bool | None = Query(default=None),
+    min_price: Decimal | None = Query(default=None, ge=0),
+    max_price: Decimal | None = Query(default=None, ge=0),
+    sort: ProductSort = Query(default=ProductSort.CREATED_AT_DESC),
     db: Session = Depends(get_db),
-) -> list[Product]:
-    return ProductService(db).list(skip=skip, limit=limit)
+) -> ProductListResponse:
+    if min_price is not None and max_price is not None and min_price > max_price:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Min price must be less than max price")
+
+    items, total = ProductService(db).list(
+        skip=skip,
+        limit=limit,
+        q=q,
+        active=active,
+        min_price=min_price,
+        max_price=max_price,
+        sort=sort.value,
+    )
+    return ProductListResponse(
+        items=[ProductRead.model_validate(item) for item in items],
+        total=total,
+    )
+
 
 @router.get(
     "/{product_id}", 
@@ -56,6 +79,7 @@ def get_product(
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
+
 
 @router.put(
     "/{product_id}", 
@@ -74,6 +98,7 @@ def update_product(
     if product is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
+
 
 @router.delete(
     "/{product_id}", 
