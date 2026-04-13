@@ -38,8 +38,8 @@ export interface ProductListQuery {
     limit?: number;
     q?: string;
     active?: boolean;
-    minPrice?: number;
-    maxPrice?: number;
+    min_price?: number;
+    max_price?: number;
     sort?: ProductSort;
 }
 
