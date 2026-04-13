@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
     
-    app_name: str = "desafio-fullstack-gestao-de-produtos"
+    app_name: str = "demo-gestao-produtos"
     debug: bool = False
     database_url: str
     jwt_secret_key: str

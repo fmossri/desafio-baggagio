@@ -1,3 +1,8 @@
+# URLs de serviços (db, rabbitmq, redis) são fixas para a rede Docker.
+# O .env local costuma usar localhost — não interpolar DATABASE_URL/RABBITMQ_URL/REDIS_URL
+# aqui evita o api/worker apontarem para 127.0.0.1 dentro do container.
+# Override opcional: COMPOSE_DATABASE_URL, COMPOSE_RABBITMQ_URL, COMPOSE_REDIS_URL, COMPOSE_TEST_DATABASE_URL.
+
 services:
   db:
     image: postgres:16-alpine
@@ -43,14 +48,14 @@ services:
       dockerfile: Dockerfile
     environment:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      APP_NAME: ${APP_NAME:-desafio-fullstack-gestao-de-produtos}
+      APP_NAME: ${APP_NAME:-demo-gestao-produtos}
       CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS:-true}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:4200,http://127.0.0.1:4200}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
+      DATABASE_URL: ${COMPOSE_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder-key}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RABBITMQ_URL: ${COMPOSE_RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      REDIS_URL: ${COMPOSE_REDIS_URL:-redis://redis:6379/0}
     ports:
       - "8000:8000"
     depends_on:
@@ -96,13 +101,13 @@ services:
       dockerfile: Dockerfile
     environment:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
+      DATABASE_URL: ${COMPOSE_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder-key}
       MESSAGING_RETRY_TTL_MS: ${MESSAGING_RETRY_TTL_MS:-5000}
       OUTBOX_BATCH_SIZE: ${OUTBOX_BATCH_SIZE:-100}
       OUTBOX_POLL_INTERVAL_SECONDS: ${OUTBOX_POLL_INTERVAL_SECONDS:-2}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      RABBITMQ_URL: ${COMPOSE_RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
     depends_on:
       db:
         condition: service_healthy
@@ -123,12 +128,12 @@ services:
       dockerfile: Dockerfile
     environment:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
+      DATABASE_URL: ${COMPOSE_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_db}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-placeholder-key}
       MESSAGING_MAX_ATTEMPTS: ${MESSAGING_MAX_ATTEMPTS:-8}
       MESSAGING_RETRY_TTL_MS: ${MESSAGING_RETRY_TTL_MS:-5000}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      RABBITMQ_URL: ${COMPOSE_RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
     depends_on:
       db:
         condition: service_healthy
@@ -149,12 +154,12 @@ services:
       dockerfile: Dockerfile
     environment:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      DATABASE_URL: ${TEST_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_test_db}
+      DATABASE_URL: ${COMPOSE_TEST_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_test_db}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-test-key}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
-      TEST_DATABASE_URL: ${TEST_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_test_db}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      RABBITMQ_URL: ${COMPOSE_RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
+      TEST_DATABASE_URL: ${COMPOSE_TEST_DATABASE_URL:-postgresql+psycopg://baggagio:baggagio@db:5432/baggagio_test_db}
+      REDIS_URL: ${COMPOSE_REDIS_URL:-redis://redis:6379/0}
     depends_on:
       db:
         condition: service_healthy
