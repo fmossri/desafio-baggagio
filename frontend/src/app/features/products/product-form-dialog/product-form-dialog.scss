@@ -1,4 +1,16 @@
+:host ::ng-deep .p-dialog-content {
+    box-sizing: border-box;
+  }
+  form {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
 .field {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     margin-bottom: 0.75rem;
   }
   .field label {

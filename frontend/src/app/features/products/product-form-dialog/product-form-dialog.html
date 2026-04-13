@@ -11,30 +11,43 @@
             <label for="pf-name">Nome</label>
             <input pInputText id="pf-name" formControlName="name" class="w-full" autocomplete="off" />
         </div>
-
+        @if (form.controls.name.invalid && form.controls.name.touched) {
+            <small class="field-error">Nome é obrigatório (até 255 caracteres).</small>
+          }
         <div class="field">
             <label for="pf-descript">Descrição</label>
-            <textarea pTextarea id="pf-descript" formControlName="description" rows="3" class="w-full" />
+            <textarea pTextarea id="pf-descript" formControlName="description" rows="3" class="w-full"></textarea>
         </div>
 
         <div class="field">
             <label for="pf-price">Preço</label>
-            <input 
-                pInputNumber 
-                id="pf-price" 
-                formControlName="price" 
-                mode="decimal" 
-                [min]="0" 
-                [maxFractionDigits]="2" 
-                class="w-full" 
+            <p-inputNumber 
+                inputId="pf-price"
+                formControlName="price"
+                mode="decimal"
+                [min]="0"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="2"
+                styleClass="w-full"
             />
         </div>
-
+        @if (form.controls.price.invalid && form.controls.price.touched) {
+            <small class="field-error">Preço é obrigatório e deve ser maior que 0.</small>
+          }
         <div class="field">
             <label for="pf-quant">Quantidade</label>
-            <input pInputNumber id="pf-quant" formControlName="quantity" [min]="0" [useGrouping]="false" class="w-full" />
+            <p-inputNumber
+                inputId="pf-quant"
+                formControlName="quantity"
+                [min]="0"
+                [useGrouping]="false"
+                styleClass="w-full"
+                defaultValue="1"
+            />
         </div>
-
+        @if (form.controls.quantity.invalid && form.controls.quantity.touched) {
+            <small class="field-error">Quantidade é obrigatória e deve ser maior que 0.</small>
+          }
         <div class="field flex align-items-center gap-2">
             <p-checkbox formControlName="active" inputId="pf-active" [binary]="true" />
             <label for="pf-active">Ativo</label>

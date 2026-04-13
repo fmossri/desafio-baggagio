@@ -1,26 +1,93 @@
-<p-toast />
 <p-confirmDialog />
 
 <p-toolbar>
-    <div class="p-toolbar-group-start flex flex-wrap gap-2 align-items-end">
-        <span class="p-float-label">
-            <input pInputText id="q" [(ngModel)]="filterQ" />
-            <label for="q">Pesquisar</label>
-        </span>
-        <p-select
-            inputId="sort"
-            [(ngModel)]="sort"
-            [options]="sortOptions"
-            optionLabel="label"
-            optionValue="value"
-            placeholder="Ordenar por"
-            styleClass="min-w-12-rem"
-        />
-        <p-button label="Aplicar filtros" (onClick)="applyFilters()" />
-    </div>
-    <div class="p-toolbar-group-end">
+    <ng-template pTemplate="start">
+        <div class="product-list__toolbar">
+            <div class="product-list__row product-list__row--search">
+                <span class="p-float-label product-list__float product-list__float--search">
+                    <label class="product-list__label" for="q">Pesquisar</label>
+                    <input 
+                        pInputText 
+                        id="q" 
+                        [(ngModel)]="filterQ" 
+                        (keyup.enter)="applyFilters()"
+                        placeholder=" "
+                        autocomplete="off"
+                    />
+                </span>
+                <div class="product-list__grow" aria-hidden="true"></div>
+                <p-button
+                label="Buscar"
+                icon="pi pi-search"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="applyFilters()"
+                />
+            </div>
+            <div class="product-list__row product-list__row--filters">
+                <span class="p-float-label product-list__float">
+                    <label class="product-list__label" for="sort">Ordenar por</label>
+                    <p-select
+                        inputId="sort"
+                        [(ngModel)]="sort"
+                        [options]="sortOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Ordenar por"
+                        styleClass="min-w-12rem"
+                    />
+                </span> 
+                <span class="p-float-label product-list__float">
+                    <label class="product-list__label" for="active">Status</label>
+                    <p-select
+                        inputId="active"
+                        [(ngModel)]="filterActive"
+                        [options]="activeFilterOptions"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Ativo"
+                        styleClass="min-w-10rem"
+                    />
+                </span>
+            
+                <span class="p-float-label product-list__float">
+                    <label class="product-list__label" for="minPrice">Preço mín.</label>
+                    <p-inputNumber
+                        inputId="minPrice"
+                        [(ngModel)]="filterMinPrice"
+                        mode="decimal"
+                        [minFractionDigits]="2"
+                        [maxFractionDigits]="2"
+                        [min]="0"
+                        placeholder="Preço mín."
+                        [showClear]="true"
+                        styleClass="min-w-10rem"
+                    />
+                </span>
+                <span class="p-float-label product-list__float">
+                    <label class="product-list__label" for="maxPrice">Preço máx.</label>
+                    <p-inputNumber
+                        inputId="maxPrice"
+                        [(ngModel)]="filterMaxPrice"
+                        mode="decimal"
+                        [minFractionDigits]="2"
+                        [maxFractionDigits]="2"
+                        [min]="0"
+                        placeholder="Preço máx."
+                        [showClear]="true"
+                        styleClass="min-w-10rem"
+                    />
+                </span>
+
+                <div class="product-list__filter-actions">
+                    <p-button label="Aplicar filtros" (onClick)="applyFilters()" />
+                </div>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="end">
         <p-button label="Novo produto" icon="pi pi-plus" (onClick)="openCreate()" />
-    </div>
+    </ng-template>
 </p-toolbar>
 
 @if (error) {
@@ -37,7 +104,7 @@
     [totalRecords]="totalRecords"
     [loading]="loading"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} até {last} de {totalRecords} produtos"
+    currentPageReportTemplate="Mostrando de {first} a {last} em {totalRecords} produtos"
 >
     <ng-template pTemplate="header">
         <tr>

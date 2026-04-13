@@ -12,7 +12,6 @@ import {
     ReactiveFormsModule,
     Validators,
 } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DialogModule } from 'primeng/dialog';
@@ -22,6 +21,7 @@ import { TextareaModule } from 'primeng/textarea';
 
 import type { Product } from '../../../core/models/product.models';
 import { ProductService } from '../product.service';
+import { UserNotifyService } from '../../../core/notify/user-notify.service';
 
 @Component({
   selector: 'app-product-form-dialog',
@@ -40,7 +40,7 @@ import { ProductService } from '../product.service';
 export class ProductFormDialog implements OnChanges {
     private readonly fb = inject(FormBuilder);
     private readonly productsApi = inject(ProductService);
-    private readonly messages = inject(MessageService);
+    private readonly notify = inject(UserNotifyService);
 
     @Input() visible = false;
     @Output() readonly visibleChange = new EventEmitter<boolean>();
@@ -110,39 +110,38 @@ export class ProductFormDialog implements OnChanges {
         const value = this.form.getRawValue();
 
         const done = () => {
-            this.messages.add({
-                severity: 'success',
-                summary: this.product ? 'Salvo' : 'Criado',
-                detail: this.product ? 'Produto atualizado.' : 'Produto criado.',
-            });
+            this.notify.success(
+                this.product ? 'Salvo' : 'Criado',
+                this.product ? 'Produto atualizado.' : 'Produto criado.',
+            );
             this.visibleChange.emit(false);
             this.saved.emit();
         };
 
-        const fail = () => {
-            this.messages.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: this.product ? 'Falha ao atualizar produto.' : 'Falha ao criar produto.',
-            });
-        };
+        const onError = (err: unknown) =>
+            this.notify.error(err, { skip401: true });
+
         if (this.product) {
-            this.productsApi.update(this.product.id, {
-                name: value.name,
-                description: value.description,
-                price: value.price,
-                quantity: value.quantity,
-                active: value.active,
-            }).subscribe({next: done, error: fail});
+            this.productsApi
+                .update(this.product.id, {
+                    name: value.name,
+                    description: value.description,
+                    price: value.price,
+                    quantity: value.quantity,
+                    active: value.active,
+                })
+                .subscribe({ next: done, error: onError });
         } else {
-            this.productsApi.create({
-                name: value.name,
-                description: value.description,
-                price: value.price,
-                quantity: value.quantity,
-                active: value.active,
-            }).subscribe({next: done, error: fail});
-        }  
+            this.productsApi
+                .create({
+                    name: value.name,
+                    description: value.description,
+                    price: value.price,
+                    quantity: value.quantity,
+                    active: value.active,
+                })
+                .subscribe({ next: done, error: onError });
+        }
     }
 }
 

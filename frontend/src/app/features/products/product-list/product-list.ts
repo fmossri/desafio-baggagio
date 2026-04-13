@@ -6,11 +6,11 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmationService, MessageService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { UserNotifyService } from '../../../core/notify/user-notify.service';
 
 import { ProductService } from '../product.service';
 import { ProductFormDialog } from '../product-form-dialog/product-form-dialog';
@@ -18,6 +18,7 @@ import type { Product, ProductSort } from '../../../core/models/product.models';
 
 @Component({
   selector: 'app-product-list',
+  host: { class: 'product-list-page'},
   standalone: true,
   imports: [
     FormsModule,
@@ -27,20 +28,19 @@ import type { Product, ProductSort } from '../../../core/models/product.models';
     InputTextModule,
     SelectModule,
     TagModule,
-    ProgressSpinnerModule,
     MessageModule,
     ConfirmDialogModule,
-    ToastModule,
+    InputNumberModule,
     ProductFormDialog,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit {
     private readonly productsApi = inject(ProductService);
-    private readonly messages = inject(MessageService);
     private readonly confirm = inject(ConfirmationService);
+    private readonly notify = inject(UserNotifyService);
 
     products: Product[] = [];
     totalRecords = 0;
@@ -63,6 +63,12 @@ export class ProductList implements OnInit {
         { label: 'Preço ↓', value: 'price_desc'},
         { label: 'Nome A-Z', value: 'name_asc'},
         { label: 'Nome Z-A', value: 'name_desc'},
+    ];
+
+    readonly activeFilterOptions: { label: string; value: boolean | null }[] = [
+        { label: 'Todos', value: null },
+        { label: 'Ativos', value: true },
+        { label: 'Inativos', value: false },
     ];
 
     ngOnInit(): void {}
@@ -128,19 +134,11 @@ export class ProductList implements OnInit {
     private deleteRow(id: string): void {
         this.productsApi.delete(id).subscribe({
             next: () => {
-                this.messages.add({
-                    severity: 'success',
-                    summary: 'Removido',
-                    detail: 'Produto removido.',
-                });
+                this.notify.success('Removido', 'Produto removido.');
                 this.applyFilters();
             },
-            error: () => {
-                this.messages.add({
-                    severity: 'error',
-                    summary: 'Erro',
-                    detail: 'Falha ao remover produto.'
-                });
+            error: (err) => {
+                this.notify.error(err, { skip401: true });
             },
         });
     }
