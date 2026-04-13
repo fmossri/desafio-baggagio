@@ -63,7 +63,9 @@ def test_products_crud_smoke(client: TestClient, auth_header: dict[str, str]) ->
     # Lista
     listed = client.get("/products", headers=auth_header)
     assert listed.status_code == 200
-    assert isinstance(listed.json(), list)
+    body = listed.json()
+    assert "items" in body and "total" in body
+    assert isinstance(body["items"], list)
 
     # Get
     got = client.get(f"/products/{product_id}", headers=auth_header)
@@ -90,4 +92,32 @@ def test_products_crud_smoke(client: TestClient, auth_header: dict[str, str]) ->
     # Lista depois do delete deve retornar vazia
     listed_after_delete = client.get("/products", headers=auth_header)
     assert listed_after_delete.status_code == 200
-    assert listed_after_delete.json() == []
+    assert listed_after_delete.json()["items"] == []
+    assert listed_after_delete.json()["total"] == 0
+
+def test_list_products_supports_q_filter(client: TestClient, auth_header: dict[str, str]) -> None:
+    client.post(
+        "/products",
+        headers=auth_header,
+        json={
+            "name": "Mala G",
+            "description": "Teste CRUD",
+            "price": "299.90",
+            "quantity": 2,
+            "active": True,
+        },
+    )
+    response = client.get("/products", headers=auth_header, params={"q": "Mala G"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] >= 1
+    assert any(item["name"] == "Mala G" for item in body["items"])
+
+
+def test_list_products_invalid_price_range_returns_400(client: TestClient, auth_header: dict[str, str]) -> None:
+    response = client.get(
+        "/products",
+        headers=auth_header,
+        params={"min_price": "100.00", "max_price": "50.00"},
+    )
+    assert response.status_code == 400

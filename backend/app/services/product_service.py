@@ -37,8 +37,28 @@ class ProductService:
     def get(self, product_id: uuid.UUID) -> Product | None:
         return self._products.get_by_id(product_id)
 
-    def list(self, skip: int = 0, limit: int = 50) -> list[Product]:
-        return self._products.list(skip=skip, limit=limit)
+    def list(
+        self, 
+        skip: int = 0, 
+        limit: int = 50,
+        q: str | None = None,
+        active: bool | None = None,
+        min_price: Decimal | None = None,
+        max_price: Decimal | None = None,
+        sort: str = "created_at_desc",
+        ) -> tuple[list[Product], int]:
+        if min_price is not None and max_price is not None and min_price > max_price:
+            raise ValueError("O preço mínimo não pode ser maior que o preço máximo")
+
+        return self._products.list(
+            skip=skip, 
+            limit=limit,
+            q=q,
+            active=active,
+            min_price=min_price,
+            max_price=max_price,
+            sort=sort,
+        )
 
     def update(self, product_id: uuid.UUID, payload: ProductUpdate, actor_user_id: uuid.UUID) -> Product | None:
         product = self._products.get_by_id(product_id)

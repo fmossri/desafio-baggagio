@@ -1,0 +1,10 @@
+<header class="app-header">
+    <span class="title">Gestão de Produtos</span>
+    @if (auth.isLoggedIn()) {
+        <p-button label="Sair" (onClick)="logout()" />
+    }
+</header>
+<p-toast key="app" position="top-right" />
+<main class="app-main">
+    <router-outlet />
+</main>

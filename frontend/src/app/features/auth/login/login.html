@@ -1,0 +1,43 @@
+<div class="login-page">
+    <h1>Entrar</h1>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field">
+            <label for="email">Email</label>
+            <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                autocomplete="username"
+                class="w-full"
+            />
+        </div>
+
+        <div class="field">
+            <label for="password">Senha</label>
+            <p-password
+                id="password"
+                formControlName="password"
+                [feedback]="false"
+                [toggleMask]="true"
+                autocomplete="current-password"
+                styleClass="w-full"
+                [inputStyleClass]="'w-full'"
+            />
+        </div>
+        @if (form.controls.email.invalid && form.controls.email.touched) {
+            <small class="field-error">Informe um e-mail válido.</small>
+        }
+        @if (form.controls.password.invalid && form.controls.password.touched) {
+            <small class="field-error">Senha é obrigatória.</small>
+        }
+
+        <p-button
+            type="submit"
+            label="Entrar"
+            [loading]="loading"
+            [disabled]="loading"
+        />
+    </form>
+</div>
